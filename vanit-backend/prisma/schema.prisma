@@ -1,0 +1,215 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model bus_locations {
+  id         Int       @id @default(autoincrement())
+  bus_number String    @unique(map: "bus_number") @db.VarChar(50)
+  latitude   Decimal   @db.Decimal(10, 7)
+  longitude  Decimal   @db.Decimal(10, 7)
+  updated_at DateTime? @default(now()) @db.Timestamp(0)
+}
+
+model buses {
+  id         Int           @id @default(autoincrement())
+  bus_name   String        @db.VarChar(255)
+  status     buses_status? @default(inactive)
+  created_at DateTime?     @default(now()) @db.Timestamp(0)
+}
+
+model captain_complaints {
+  complaintID Int       @id @default(autoincrement())
+  captainID   Int?
+  message     String    @db.Text
+  timestamp   DateTime? @default(now()) @db.DateTime(0)
+  status      String?   @default("Pending") @db.VarChar(20)
+  captains    captains? @relation(fields: [captainID], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "captain_complaints_ibfk_1")
+
+  @@index([captainID], map: "captainID")
+}
+
+model captains {
+  id                      Int                  @id @default(autoincrement())
+  status                  captains_status?     @default(inactive)
+  created_at              DateTime?            @default(now()) @db.Timestamp(0)
+  first_name              String               @db.VarChar(50)
+  last_name               String               @db.VarChar(50)
+  dob                     DateTime             @db.Date
+  cnic                    String               @unique(map: "cnic") @db.VarChar(15)
+  cnic_picture            String?              @db.VarChar(255)
+  driving_license         String               @unique(map: "driving_license") @db.VarChar(20)
+  driving_license_picture String?              @db.VarChar(255)
+  phone                   String               @db.VarChar(20)
+  alternate_phone         String?              @db.VarChar(20)
+  email                   String               @unique(map: "email") @db.VarChar(100)
+  address                 String               @db.VarChar(255)
+  route_name              String?              @db.VarChar(100)
+  bus_no                  String?              @db.VarChar(50)
+  password                String?              @db.VarChar(255)
+  route_id                Int?
+  is_active               Boolean?             @default(false)
+  current_route           String?              @db.VarChar(100)
+  captain_complaints      captain_complaints[]
+  routes                  routes?              @relation(fields: [route_name], references: [route_name], onDelete: NoAction, onUpdate: NoAction, map: "captains_ibfk_1")
+  attendance_logs         attendance_logs[]
+  boarding_sessions       boarding_sessions[]
+
+  @@index([route_name], map: "route_name")
+}
+
+model contact_messages {
+  id         Int       @id @default(autoincrement())
+  name       String?   @db.VarChar(100)
+  email      String?   @db.VarChar(100)
+  message    String?   @db.Text
+  created_at DateTime? @default(now()) @db.Timestamp(0)
+}
+
+model emergency_alerts {
+  id                  Int       @id @default(autoincrement())
+  user_type           String    @db.VarChar(20) // 'student' or 'captain'
+  user_id             Int? // Student ID or Captain ID
+  first_name          String    @db.VarChar(255)
+  last_name           String    @db.VarChar(255)
+  registration_number String?   @db.VarChar(50) // Only for students
+  phone               String    @db.VarChar(20)
+  route_name          String    @db.VarChar(100)
+  stop_name           String?   @db.VarChar(100) // May be null for captains
+  latitude            Decimal?  @db.Decimal(10, 7)
+  longitude           Decimal?  @db.Decimal(10, 7)
+  emergency_type      String    @default("general") @db.VarChar(50) // 'medical', 'security', 'mechanical', 'general'
+  message             String?   @db.Text // Optional custom message
+  status              String    @default("pending") @db.VarChar(20) // 'pending', 'acknowledged', 'resolved'
+  acknowledged_by     String?   @db.VarChar(100) // Admin who acknowledged
+  acknowledged_at     DateTime? @db.Timestamp(0)
+  resolution_notes    String?   @db.Text // Admin notes on resolution
+  priority_level      String    @default("high") @db.VarChar(20) // 'low', 'medium', 'high', 'critical'
+  timestamp           DateTime? @default(now()) @db.Timestamp(0)
+  resolved_at         DateTime? @db.Timestamp(0)
+}
+
+model invoices {
+  invoiceID   Int       @id @default(autoincrement())
+  studentID   Int?
+  imagePath   String    @db.VarChar(255)
+  description String?   @db.Text
+  timestamp   DateTime? @default(now()) @db.DateTime(0)
+  students    students? @relation(fields: [studentID], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "invoices_ibfk_1")
+
+  @@index([studentID], map: "studentID")
+}
+
+model routes {
+  id              Int        @id @default(autoincrement())
+  route_name      String     @unique(map: "route_name") @db.VarChar(100)
+  qr_code         String?    @db.Text
+  qr_generated_at DateTime?  @db.Timestamp(0)
+  created_at      DateTime?  @default(now()) @db.Timestamp(0)
+  captains        captains[]
+  stops           stops[]
+  attendance_logs attendance_logs[]
+  boarding_sessions boarding_sessions[]
+}
+
+model stops {
+  id         Int       @id @default(autoincrement())
+  stop_name  String    @db.VarChar(100)
+  route_id   Int?
+  latitude   Decimal?  @db.Decimal(10, 7)
+  longitude  Decimal?  @db.Decimal(10, 7)
+  created_at DateTime? @default(now()) @db.Timestamp(0)
+  routes     routes?   @relation(fields: [route_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "stops_ibfk_1")
+
+  @@index([route_id], map: "route_id")
+}
+
+model student_feedback {
+  feedbackID Int       @id @default(autoincrement())
+  studentID  Int?
+  message    String    @db.Text
+  timestamp  DateTime? @default(now()) @db.DateTime(0)
+  students   students? @relation(fields: [studentID], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "student_feedback_ibfk_1")
+
+  @@index([studentID], map: "studentID")
+}
+
+model students {
+  id                  Int                @id @default(autoincrement())
+  first_name          String?            @db.VarChar(50)
+  last_name           String?            @db.VarChar(50)
+  email               String?            @unique(map: "email") @db.VarChar(100)
+  password            String?            @db.VarChar(255)
+  registration_number String?            @db.VarChar(50)
+  semester            String?            @db.VarChar(20)
+  route_name          String?            @db.VarChar(255)
+  stop_name           String             @db.VarChar(100)
+  phone               String?            @db.VarChar(20)
+  emergency_contact   String?            @db.VarChar(20)
+  address             String?            @db.VarChar(255)
+  picture             String?            @db.VarChar(255)
+  created_at          DateTime?          @default(now()) @db.Timestamp(0)
+  invoices            invoices[]
+  student_feedback    student_feedback[]
+  attendance_logs     attendance_logs[]
+}
+
+enum captains_status {
+  active
+  inactive
+}
+
+enum buses_status {
+  active
+  inactive
+}
+
+model attendance_logs {
+  id              Int       @id @default(autoincrement())
+  student_id      Int
+  route_name      String    @db.VarChar(100)
+  captain_id      Int
+  scan_timestamp  DateTime  @default(now()) @db.Timestamp(0)
+  qr_code_data    Json?
+  location_lat    Decimal?  @db.Decimal(10, 7)
+  location_lng    Decimal?  @db.Decimal(10, 7)
+  session_id      String?   @db.VarChar(50)
+  scan_type       String    @default("boarding") @db.VarChar(20) // boarding, alighting
+  is_valid        Boolean   @default(true)
+  created_at      DateTime  @default(now()) @db.Timestamp(0)
+  
+  student         students  @relation(fields: [student_id], references: [id], onDelete: Cascade)
+  captain         captains  @relation(fields: [captain_id], references: [id], onDelete: Cascade)
+  route           routes    @relation(fields: [route_name], references: [route_name], onDelete: Cascade)
+
+  @@index([student_id], map: "attendance_logs_student_id")
+  @@index([captain_id], map: "attendance_logs_captain_id")
+  @@index([route_name], map: "attendance_logs_route_name")
+  @@index([scan_timestamp], map: "attendance_logs_scan_timestamp")
+  @@index([session_id], map: "attendance_logs_session_id")
+}
+
+model boarding_sessions {
+  id               Int       @id @default(autoincrement())
+  session_id       String    @unique @db.VarChar(50)
+  captain_id       Int
+  route_name       String    @db.VarChar(100)
+  session_start    DateTime  @default(now()) @db.Timestamp(0)
+  session_end      DateTime? @db.Timestamp(0)
+  students_onboard Int       @default(0)
+  is_active        Boolean   @default(true)
+  created_at       DateTime  @default(now()) @db.Timestamp(0)
+  
+  captain          captains  @relation(fields: [captain_id], references: [id], onDelete: Cascade)
+  route            routes    @relation(fields: [route_name], references: [route_name], onDelete: Cascade)
+
+  @@index([captain_id], map: "boarding_sessions_captain_id")
+  @@index([route_name], map: "boarding_sessions_route_name")
+  @@index([session_id], map: "boarding_sessions_session_id")
+  @@index([is_active], map: "boarding_sessions_is_active")
+}
