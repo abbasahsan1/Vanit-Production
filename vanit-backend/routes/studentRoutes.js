@@ -46,41 +46,74 @@ router.get('/routes', async (req, res) => {
  */
 router.post('/student-registration', async (req, res) => {
   const {
-      first_name, last_name, email, password, registration_number, semester,
+      first_name, last_name, email, registration_number, semester,
       route_name, stop_name, phone, emergency_contact, emergency_contact_relation, 
       address, picture
   } = req.body;
 
   try {
-      // Hash the password if provided
-      let hashedPassword = null;
-      if (password) {
-          const bcrypt = require('bcrypt');
-          hashedPassword = await bcrypt.hash(password, 10);
+      // ✅ Check for duplicate registration number first
+      const [existingByRegNumber] = await pool.query(
+          'SELECT id, first_name, last_name FROM students WHERE registration_number = ?',
+          [registration_number]
+      );
+
+      if (existingByRegNumber.length > 0) {
+          const existing = existingByRegNumber[0];
+          return res.status(400).json({ 
+              message: `❌ Registration number "${registration_number}" is already registered to ${existing.first_name} ${existing.last_name}!` 
+          });
       }
 
+      // ✅ Check for duplicate email
+      const [existingByEmail] = await pool.query(
+          'SELECT id, first_name, last_name FROM students WHERE email = ?',
+          [email]
+      );
+
+      if (existingByEmail.length > 0) {
+          const existing = existingByEmail[0];
+          return res.status(400).json({ 
+              message: `❌ Email "${email}" is already registered to ${existing.first_name} ${existing.last_name}!` 
+          });
+      }
+
+      // ✅ Insert student record WITHOUT password (password will be set during signup)
       const query = `
         INSERT INTO students (
-          first_name, last_name, email, password, registration_number, semester,
+          first_name, last_name, email, registration_number, semester,
           route_name, stop_name, phone, emergency_contact, emergency_contact_relation,
           address, picture
         ) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `;
 
       await pool.query(query, [
-          first_name, last_name, email, hashedPassword, registration_number, semester,
+          first_name, last_name, email, registration_number, semester,
           route_name, stop_name, phone, emergency_contact, emergency_contact_relation,
           address, picture
       ]);
 
-      res.status(201).json({ message: "✅ Student registration successful!" });
+      res.status(201).json({ 
+          message: "✅ Registration complete! Now sign up on the login page to set your password and access your account." 
+      });
   } catch (err) {
       console.error("❌ Database error:", err.message);
       if (err.code === 'ER_DUP_ENTRY') {
-          return res.status(400).json({ 
-              message: "❌ Email or registration number already exists!" 
-          });
+          // Enhanced duplicate entry error handling
+          if (err.message.includes('registration_number')) {
+              return res.status(400).json({ 
+                  message: "❌ Registration number already exists! Please use a different registration number." 
+              });
+          } else if (err.message.includes('email')) {
+              return res.status(400).json({ 
+                  message: "❌ Email address already exists! Please use a different email address." 
+              });
+          } else {
+              return res.status(400).json({ 
+                  message: "❌ Email or registration number already exists!" 
+              });
+          }
       }
       res.status(500).json({ message: "Error submitting registration form" });
   }

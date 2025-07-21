@@ -27,6 +27,16 @@ const CreateRoute = () => {
     setStops(newStops);
   };
 
+  // ✅ Check if a stop name is duplicate
+  const isDuplicateStop = (currentIndex, value) => {
+    if (!value.trim()) return false;
+    
+    return stops.some((stop, index) => 
+      index !== currentIndex && 
+      stop.trim().toLowerCase() === value.trim().toLowerCase()
+    );
+  };
+
   // Submit form to backend
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -40,6 +50,16 @@ const CreateRoute = () => {
     const validStops = stops.filter(stop => stop.trim() !== "");
     if (validStops.length === 0) {
       alert("❌ Please add at least one stop.");
+      return;
+    }
+
+    // ✅ Check for duplicate stops
+    const stopNames = validStops.map(stop => stop.trim().toLowerCase());
+    const uniqueStops = [...new Set(stopNames)];
+    
+    if (stopNames.length !== uniqueStops.length) {
+      const duplicates = stopNames.filter((stop, index, arr) => arr.indexOf(stop) !== index);
+      alert(`❌ Duplicate stops found: ${[...new Set(duplicates)].join(', ')}\n\nPlease ensure all stops have unique names.`);
       return;
     }
 
@@ -152,41 +172,49 @@ const CreateRoute = () => {
                   </div>
                   
                   <div className="space-y-3">
-                    {stops.map((stop, index) => (
-                      <div key={index} className="flex items-center space-x-3">
-                        <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium" style={{ backgroundColor: 'var(--color-info)', color: 'var(--color-text-inverse)' }}>
-                          {index + 1}
+                    {stops.map((stop, index) => {
+                      const isCurrentDuplicate = isDuplicateStop(index, stop);
+                      return (
+                        <div key={index} className="flex items-center space-x-3">
+                          <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium" style={{ backgroundColor: 'var(--color-info)', color: 'var(--color-text-inverse)' }}>
+                            {index + 1}
+                          </div>
+                          <div className="relative flex-1">
+                            <FaMapPin className="input-icon" />
+                            <input
+                              type="text"
+                              value={stop}
+                              onChange={(e) => handleStopChange(index, e.target.value)}
+                              placeholder={`Stop ${index + 1} name`}
+                              required
+                              className={`input pl-10 w-full ${isCurrentDuplicate ? 'border-red-500 focus:ring-red-500' : ''}`}
+                              disabled={isSubmitting}
+                            />
+                            {isCurrentDuplicate && (
+                              <div className="absolute -bottom-6 left-0 text-xs text-red-600">
+                                ⚠️ Duplicate stop name
+                              </div>
+                            )}
+                          </div>
+                          {stops.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => removeStopField(index)}
+                              className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-colors"
+                              style={{ 
+                                backgroundColor: 'var(--color-danger)', 
+                                color: 'var(--color-text-inverse)' 
+                              }}
+                              onMouseEnter={(e) => e.target.style.opacity = '0.8'}
+                              onMouseLeave={(e) => e.target.style.opacity = '1'}
+                              disabled={isSubmitting}
+                            >
+                              <FaTrash className="text-xs" />
+                            </button>
+                          )}
                         </div>
-                        <div className="relative flex-1">
-                          <FaMapPin className="input-icon" />
-                          <input
-                            type="text"
-                            value={stop}
-                            onChange={(e) => handleStopChange(index, e.target.value)}
-                            placeholder={`Stop ${index + 1} name`}
-                            required
-                            className="input pl-10 w-full"
-                            disabled={isSubmitting}
-                          />
-                        </div>
-                        {stops.length > 1 && (
-                          <button
-                            type="button"
-                            onClick={() => removeStopField(index)}
-                            className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-colors"
-                            style={{ 
-                              backgroundColor: 'var(--color-danger)', 
-                              color: 'var(--color-text-inverse)' 
-                            }}
-                            onMouseEnter={(e) => e.target.style.opacity = '0.8'}
-                            onMouseLeave={(e) => e.target.style.opacity = '1'}
-                            disabled={isSubmitting}
-                          >
-                            <FaTrash className="text-xs" />
-                          </button>
-                        )}
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
 

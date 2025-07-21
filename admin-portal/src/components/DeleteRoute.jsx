@@ -47,12 +47,16 @@ const DeleteRoute = () => {
 
     setLoading(true);
     try {
-      await axios.delete(`http://localhost:5000/api/routes/${encodeURIComponent(route_name)}`);
+      console.log(`🗑️ Attempting to delete route: ${route_name}`);
+      const response = await axios.delete(`http://localhost:5000/api/routes/${encodeURIComponent(route_name)}`);
+      console.log(`✅ Delete response:`, response.data);
+      
       setRoutes(routes.filter(route => route.route_name !== route_name));
       alert(`✅ "${route_name}" deleted successfully!`);
     } catch (error) {
       console.error("❌ Error deleting route:", error);
-      alert("❌ Failed to delete route! Please try again.");
+      console.error("❌ Error details:", error.response?.data);
+      alert(`❌ Failed to delete route: ${error.response?.data?.error || error.message}`);
     } finally {
       setLoading(false);
     }

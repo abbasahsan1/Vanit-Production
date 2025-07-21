@@ -141,7 +141,7 @@ const DeleteCaptain = () => {
                           {captain.route_name || 'Not assigned'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm" style={{ color: 'var(--color-text-body)' }}>
-                          {captain.bus_number || 'N/A'}
+                          {captain.bus_no || 'N/A'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <button

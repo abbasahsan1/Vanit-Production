@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaUserPlus, FaTimes, FaIdCard, FaMapMarkerAlt, FaRoute, FaPhone, FaHome } from 'react-icons/fa';
+import { FaUserPlus, FaTimes, FaIdCard, FaMapMarkerAlt, FaRoute, FaPhone, FaHome, FaInfoCircle } from 'react-icons/fa';
 import axios from 'axios';
 
 const StudentRegistrationForm = () => {
@@ -9,7 +9,6 @@ const StudentRegistrationForm = () => {
     first_name: '',
     last_name: '',
     email: '',
-    password: '',
     registration_number: '',
     semester: '',
     phone: '',
@@ -137,7 +136,7 @@ const StudentRegistrationForm = () => {
 
     // Client-side validation
     const requiredFields = [
-      'first_name', 'last_name', 'email', 'password', 'registration_number', 
+      'first_name', 'last_name', 'email', 'registration_number', 
       'semester', 'phone', 'emergency_contact', 'emergency_contact_relation', 
       'address', 'route_name', 'stop_name'
     ];
@@ -181,23 +180,16 @@ const StudentRegistrationForm = () => {
       return;
     }
 
-    // Password validation
-    if (formData.password.length < 6) {
-      setMessage('❌ Password must be at least 6 characters long');
-      setLoading(false);
-      return;
-    }
-
     try {
       console.log('📤 Submitting registration data:', formData);
       const response = await axios.post('http://localhost:5000/api/student-registration', formData);
       
       if (response.status === 201 || response.status === 200) {
         console.log('✅ Registration successful:', response.data);
-        setMessage('✅ Registration successful! You can now login.');
+        setMessage('✅ Registration complete! Now sign up on the login page to set your password and access your account.');
         setTimeout(() => {
           navigate('/landing-page');
-        }, 2000);
+        }, 3000);
       } else {
         throw new Error(response.data?.message || 'Registration failed');
       }
@@ -360,7 +352,7 @@ const StudentRegistrationForm = () => {
                   <FaUserPlus className="mr-2" style={{ color: 'var(--color-primary-action)' }} />
                   Account Information
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4">
                   <div>
                     <label className="block text-body font-medium mb-2" style={{ color: 'var(--color-text-body)' }}>
                       Email Address *
@@ -374,20 +366,22 @@ const StudentRegistrationForm = () => {
                       required
                       className="input"
                     />
+                    <p className="text-xs mt-1" style={{ color: 'var(--color-text-secondary)' }}>
+                      📧 You'll use this email to sign up after registration
+                    </p>
                   </div>
-                  <div>
-                    <label className="block text-body font-medium mb-2" style={{ color: 'var(--color-text-body)' }}>
-                      Password *
-                    </label>
-                    <input
-                      type="password"
-                      name="password"
-                      value={formData.password}
-                      onChange={handleChange}
-                      placeholder="Create a strong password"
-                      required
-                      className="input"
-                    />
+                </div>
+                
+                <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mt-4">
+                  <div className="flex">
+                    <div className="flex-shrink-0">
+                      <FaInfoCircle className="h-5 w-5 text-blue-400" />
+                    </div>
+                    <div className="ml-3">
+                      <p className="text-sm text-blue-700">
+                        <strong>Next Step:</strong> After registration, you'll need to sign up on the login page to set your password before you can access your account.
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -550,7 +544,7 @@ const StudentRegistrationForm = () => {
                     color: 'var(--color-text-secondary)' 
                   }}
                 >
-                  Back to Login
+                  Back to Home
                 </button>
               </div>
             </form>

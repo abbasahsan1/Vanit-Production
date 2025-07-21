@@ -57,26 +57,22 @@ const LandingPage = () => {
 
     try {
         if (!isLogin) {
+            // ✅ Signup Flow: Just set password for registered student
             const signupResponse = await axios.post(endpoint, formData);
             console.log("✅ Signup Success:", signupResponse.data);
-            setStatusMessage(signupResponse.data.message);
-
-            if (signupResponse.status === 201) {
-                console.log("🔄 Logging in user after signup...");
-
-                const loginEndpoint = `http://localhost:5000/api/auth/${userType}s/login`;
-                const loginResponse = await axios.post(loginEndpoint, {
-                    email: formData.email,
-                    password: formData.password,
-                });
-
-                if (loginResponse.status === 200) {
-                    console.log("🔐 Login Successful:", loginResponse.data);
-                    localStorage.setItem(`${userType}Token`, loginResponse.data.token);
-                    const redirectPath = userType === 'student' ? '/student/home' : '/captain/home';
-                    window.location.href = redirectPath;
-                }
-            }
+            setStatusMessage(`✅ ${signupResponse.data.message} Please login with your credentials.`);
+            
+            // ✅ Switch to login form after successful signup
+            setTimeout(() => {
+                setIsLogin(true);
+                setFormData(prev => ({ 
+                    ...prev, 
+                    first_name: '', 
+                    last_name: '', 
+                    registration_number: '' 
+                }));
+                setStatusMessage('');
+            }, 2000);
         } else {
             const response = await axios.post(endpoint, formData);
             console.log("✅ Login Success:", response.data);
@@ -101,12 +97,8 @@ const LandingPage = () => {
         }
     } catch (error) {
         console.error("🔴 API Error:", error);
-        const errorMsg = error.response?.data?.message || error.message || "An unexpected error occurred.";
+        const errorMsg = error.response?.data?.message || error.response?.data?.error || error.message || "An unexpected error occurred.";
         setStatusMessage(`❌ ${errorMsg}`);
-
-        if (error.response?.status === 400 && errorMsg.includes("User already exists")) {
-            setStatusMessage("⚠️ Account already exists. Try logging in instead.");
-        }
     }
 };
 
@@ -267,7 +259,7 @@ const clearForm = () => {
             <div className="card-content p-8">
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-2xl font-bold" style={{ color: 'var(--color-text-heading)' }}>
-                  {isLogin ? 'Student Login' : 'Student Registration'}
+                  {isLogin ? 'Student Login' : 'Student Signup'}
                 </h3>
                 <button
                   onClick={() => setShowLoginForm(false)}
@@ -277,6 +269,21 @@ const clearForm = () => {
                   ×
                 </button>
               </div>
+
+              {!isLogin && (
+                <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-4">
+                  <div className="flex">
+                    <div className="flex-shrink-0">
+                      <FaInfoCircle className="h-5 w-5 text-blue-400" />
+                    </div>
+                    <div className="ml-3">
+                      <p className="text-sm text-blue-700">
+                        <strong>Signup Step:</strong> You must be registered first. Enter your registration number to set your password and activate your account.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {statusMessage && (
                 <div className={`p-3 rounded-lg mb-4 ${
@@ -398,8 +405,20 @@ const clearForm = () => {
                   className="font-medium hover:opacity-80 transition-opacity"
                   style={{ color: 'var(--color-text-link)' }}
                 >
-                  {isLogin ? "Don't have an account? Sign up" : "Already have an account? Login"}
+                  {isLogin ? "Need to activate your account? Sign up" : "Already activated your account? Login"}
                 </button>
+                
+                {isLogin && (
+                  <div className="mt-3">
+                    <Link 
+                      to="/student-registration" 
+                      className="text-sm hover:opacity-80 transition-opacity"
+                      style={{ color: 'var(--color-text-secondary)' }}
+                    >
+                      Don't have an account? Register first →
+                    </Link>
+                  </div>
+                )}
               </div>
             </div>
           </div>
