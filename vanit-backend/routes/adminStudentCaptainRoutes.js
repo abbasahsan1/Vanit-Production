@@ -74,23 +74,23 @@ router.put('/students/update/:first_name', async (req, res) => {
 
 /**
  * ---------------------------
- * Delete Student by First Name (DELETE)
+ * Delete Student by Registration Number (DELETE)
  * ---------------------------
  */
-router.delete('/students/delete/:first_name', async (req, res) => {
-    const { first_name } = req.params;
+router.delete('/students/delete/:registration_number', async (req, res) => {
+    const { registration_number } = req.params;
 
     try {
         // ✅ Check if student exists
-        const [existingStudent] = await pool.query("SELECT * FROM students WHERE first_name = ?", [first_name]);
+        const [existingStudent] = await pool.query("SELECT * FROM students WHERE registration_number = ?", [registration_number]);
 
         if (existingStudent.length === 0) {
             return res.status(404).json({ error: "❌ Student not found!" });
         }
 
         // ✅ Delete the student
-        const query = "DELETE FROM students WHERE first_name = ?";
-        await pool.query(query, [first_name]);
+        const query = "DELETE FROM students WHERE registration_number = ?";
+        await pool.query(query, [registration_number]);
 
         res.status(200).json({ message: "✅ Student deleted successfully!" });
     } catch (error) {

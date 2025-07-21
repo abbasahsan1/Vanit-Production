@@ -55,8 +55,9 @@ const StudentList = () => {
     if (!window.confirm(confirmMessage)) return;
 
     try {
-      console.log(`🔄 Deleting student: ${student.first_name} ${student.last_name}`);
-      const response = await axios.delete(`http://localhost:5000/api/admin/students/delete/${student.first_name}`);
+      console.log(`🔄 Deleting student: ${student.first_name} ${student.last_name} (${student.registration_number})`);
+      // ✅ Fixed: Use registration_number as unique identifier instead of first_name
+      const response = await axios.delete(`http://localhost:5000/api/admin/student-management/students/delete/${encodeURIComponent(student.registration_number)}`);
       console.log("✅ Student Deleted:", response.data);
       
       alert(`Student "${student.first_name} ${student.last_name}" deleted successfully!`);
@@ -65,7 +66,7 @@ const StudentList = () => {
       setStudents(prev => prev.filter(s => s.registration_number !== student.registration_number));
     } catch (error) {
       console.error("❌ Error deleting student:", error);
-      alert(`Error deleting student: ${error.response?.data?.message || error.message}`);
+      alert(`Error deleting student: ${error.response?.data?.error || error.response?.data?.message || error.message}`);
     }
   };
 

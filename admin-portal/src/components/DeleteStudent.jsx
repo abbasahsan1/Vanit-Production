@@ -70,8 +70,8 @@ const DeleteStudent = () => {
     if (!window.confirm(confirmMessage)) return;
 
     try {
-      console.log(`🔄 Deleting student: ${student.first_name} ${student.last_name}`);
-      const response = await axios.delete(`http://localhost:5000/api/admin/students/delete/${student.first_name}`);
+      console.log(`🔄 Deleting student: ${student.first_name} ${student.last_name} (${student.registration_number})`);
+      const response = await axios.delete(`http://localhost:5000/api/admin/student-management/students/delete/${encodeURIComponent(student.registration_number)}`);
       console.log("✅ Student Deleted:", response.data);
       
       alert(`Student "${student.first_name} ${student.last_name}" deleted successfully!`);
