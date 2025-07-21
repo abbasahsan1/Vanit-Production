@@ -75,6 +75,17 @@ const AddCaptain = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // ✅ Frontend validation for mandatory file uploads
+    if (!formData.cnic_picture) {
+      alert("❌ CNIC Picture is required! Please upload the CNIC image file.");
+      return;
+    }
+
+    if (!formData.driving_license_picture) {
+      alert("❌ Driving License Picture is required! Please upload the driving license image file.");
+      return;
+    }
+
     try {
       console.log("📝 Submitting captain form with data:", formData);
       
@@ -278,27 +289,35 @@ const AddCaptain = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-body)' }}>
-                      CNIC Picture
+                      CNIC Picture *
                     </label>
                     <input
                       type="file"
                       name="cnic_picture"
                       onChange={handleFileChange}
                       accept="image/*"
+                      required
                       className="input w-full"
                     />
+                    <p className="text-xs mt-1" style={{ color: 'var(--color-text-secondary)' }}>
+                      Upload a clear image of the CNIC (Required)
+                    </p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-body)' }}>
-                      Driving License Picture
+                      Driving License Picture *
                     </label>
                     <input
                       type="file"
                       name="driving_license_picture"
                       onChange={handleFileChange}
                       accept="image/*"
+                      required
                       className="input w-full"
                     />
+                    <p className="text-xs mt-1" style={{ color: 'var(--color-text-secondary)' }}>
+                      Upload a clear image of the driving license (Required)
+                    </p>
                   </div>
                 </div>
               </div>

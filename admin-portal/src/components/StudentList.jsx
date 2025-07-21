@@ -48,6 +48,27 @@ const StudentList = () => {
     setSelectedStudent(null);
   };
 
+  // ✅ Handle Delete Student
+  const handleDeleteStudent = async (student) => {
+    const confirmMessage = `Are you sure you want to delete student "${student.first_name} ${student.last_name}"?\n\nRegistration: ${student.registration_number}\nRoute: ${student.route_name}\n\nThis action cannot be undone and will completely remove the student from the database.`;
+    
+    if (!window.confirm(confirmMessage)) return;
+
+    try {
+      console.log(`🔄 Deleting student: ${student.first_name} ${student.last_name}`);
+      const response = await axios.delete(`http://localhost:5000/api/admin/students/delete/${student.first_name}`);
+      console.log("✅ Student Deleted:", response.data);
+      
+      alert(`Student "${student.first_name} ${student.last_name}" deleted successfully!`);
+
+      // ✅ Remove student from list immediately
+      setStudents(prev => prev.filter(s => s.registration_number !== student.registration_number));
+    } catch (error) {
+      console.error("❌ Error deleting student:", error);
+      alert(`Error deleting student: ${error.response?.data?.message || error.message}`);
+    }
+  };
+
   // ✅ Logout Function
   const handleLogout = () => {
     localStorage.removeItem("adminToken");
@@ -124,14 +145,24 @@ const StudentList = () => {
                         <td className="p-4" style={{ color: 'var(--color-text-body)' }}>{student.emergency_contact}</td>
                         <td className="p-4" style={{ color: 'var(--color-text-body)' }}>{student.address}</td>
                         <td className="p-4 text-center">
-                          <button
-                            onClick={() => handleViewAttendance(student)}
-                            className="btn btn-primary text-sm font-semibold flex items-center justify-center mx-auto"
-                            title="View Attendance History"
-                          >
-                            <FaHistory className="mr-2" />
-                            Attendance
-                          </button>
+                          <div className="flex items-center justify-center space-x-2">
+                            <button
+                              onClick={() => handleViewAttendance(student)}
+                              className="btn btn-primary text-sm font-semibold flex items-center"
+                              title="View Attendance History"
+                            >
+                              <FaHistory className="mr-1" />
+                              Attendance
+                            </button>
+                            <button
+                              onClick={() => handleDeleteStudent(student)}
+                              className="btn btn-danger text-sm font-semibold flex items-center"
+                              title="Delete Student"
+                            >
+                              <FaTrash className="mr-1" />
+                              Delete
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}
