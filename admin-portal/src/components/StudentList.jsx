@@ -23,7 +23,8 @@ const StudentList = () => {
         setIsLoading(true);
         setError(null);
         
-        const response = await axios.get("http://localhost:5000/api/admin/students");
+        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+        const response = await axios.get(`${apiBaseUrl}/admin/students`);
         console.log("✅ Students API Response:", response.data);
         setStudents(response.data);
       } catch (error) {
@@ -57,7 +58,8 @@ const StudentList = () => {
     try {
       console.log(`🔄 Deleting student: ${student.first_name} ${student.last_name} (${student.registration_number})`);
       // ✅ Fixed: Use registration_number as unique identifier instead of first_name
-      const response = await axios.delete(`http://localhost:5000/api/admin/student-management/students/delete/${encodeURIComponent(student.registration_number)}`);
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+      const response = await axios.delete(`${apiBaseUrl}/admin/student-management/students/delete/${encodeURIComponent(student.registration_number)}`);
       console.log("✅ Student Deleted:", response.data);
       
       alert(`Student "${student.first_name} ${student.last_name}" deleted successfully!`);
