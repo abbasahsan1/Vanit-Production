@@ -87,7 +87,7 @@ const AdminDashboard = () => {
       const [busesRes, captainsRes, routesRes, activeCaptainsRes, activeSessionsRes] = await Promise.all([
         axios.get('http://localhost:5000/api/admin/buses/count'),
         axios.get('http://localhost:5000/api/admin/captains'),
-        axios.get('http://localhost:5000/api/routes'),
+        axios.get('http://localhost:5000/api/admin/routes/all'),
         axios.get('http://localhost:5000/api/admin/captains/active'),
         axios.get('http://localhost:5000/api/attendance/active-sessions')
       ]);
@@ -99,7 +99,7 @@ const AdminDashboard = () => {
       const stats = {
         totalBuses: busesRes.data.count || 0,
         totalCaptains: captainsRes.data.data ? captainsRes.data.data.length : 0,
-        totalRoutes: routesRes.data && routesRes.data.routes ? routesRes.data.routes.length : 0,
+        totalRoutes: Array.isArray(routesRes.data) ? routesRes.data.length : 0,
         activeBuses: activeSessions.length, // Active buses = active sessions
         activeCaptains: activeCaptainsRes.data.data ? activeCaptainsRes.data.data.length : 0,
         activeRoutes: activeRoutes
