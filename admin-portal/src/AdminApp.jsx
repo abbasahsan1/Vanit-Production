@@ -1,5 +1,6 @@
 import React from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import GlobalNotificationProvider from "./components/GlobalNotificationProvider";
 import AdminLogin from "./components/AdminLogin";
 import AdminDashboard from "./components/AdminDashboard";
 import PrivateAdminRoute from "./components/PrivateAdminRoute";
@@ -22,20 +23,21 @@ import InvoiceManagement from "./components/InvoiceManagement";
 
 function AdminApp() {
   return (
-    <Router basename="/admin">
-      <Routes>
-        {/* Admin Login Route */}
-        <Route path="/" element={<AdminLogin />} />
+    <GlobalNotificationProvider>
+      <Router basename="/admin">
+        <Routes>
+          {/* Admin Login Route */}
+          <Route path="/" element={<AdminLogin />} />
 
-        {/* Protected Dashboard Route */}
-        <Route
-          path="/dashboard"
-          element={
-            <PrivateAdminRoute>
-              <AdminDashboard />
-            </PrivateAdminRoute>
-          }
-        />
+          {/* Protected Dashboard Route */}
+          <Route
+            path="/dashboard"
+            element={
+              <PrivateAdminRoute>
+                <AdminDashboard />
+              </PrivateAdminRoute>
+            }
+          />
 
         {/* Protected Routes Page */}
         <Route
@@ -194,6 +196,7 @@ function AdminApp() {
       </Routes>
 
     </Router>
+    </GlobalNotificationProvider>
   );
 }
 

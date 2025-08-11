@@ -18,6 +18,7 @@ import {
   FaExclamationTriangle
 } from 'react-icons/fa';
 import VanItLogo from './VanItLogo';
+import NotificationBell from './NotificationBell';
 
 const UnifiedNavbar = () => {
   const navigate = useNavigate();
@@ -167,6 +168,9 @@ const UnifiedNavbar = () => {
           >
             <FaExclamationTriangle className="mr-2" />  Emergency
           </Link>
+          
+          {/* Notification Bell */}
+          <NotificationBell />
           
           {/* Profile Dropdown */}
           <div className="relative dropdown-container">
